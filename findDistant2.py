@@ -186,7 +186,7 @@ def face_data(image):
     return face_width,centerX,centerY
 
 
-
+#fd
 # reading reference_image from directory 
 ref_image = cv2.imread("Ref_image.jpg") 
 
