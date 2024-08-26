@@ -114,49 +114,49 @@ def setAngleGimbal(yaw,pitch):
 
 # initialize the camera object so that we 
 # can get frame from it 
-cap = cv2.VideoCapture("rtsp://192.168.144.25:8554/video1") 
+# cap = cv2.VideoCapture("rtsp://192.168.144.25:8554/video1") 
 
-# cap = cv2.VideoCapture(0)
-frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-frameHeight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-# cap.set(cv2.CAP_PROP_FPS,25)
-print(frameWidth,frameHeight)
-print(cap.get(cv2.CAP_PROP_FPS))
-print(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+# # cap = cv2.VideoCapture(0)
+# frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+# frameHeight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+# # cap.set(cv2.CAP_PROP_FPS,25)
+# print(frameWidth,frameHeight)
+# print(cap.get(cv2.CAP_PROP_FPS))
+# print(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
 
-yaw = -90
-pitch = 0
-# rval, frame = cap.read()
-# time.sleep(2)
-# setAngleGimbal(yaw,pitch)
-# time.sleep(4)
-while True:
-    rval, frame = cap.read()
+# yaw = -90
+# pitch = 0
+# # rval, frame = cap.read()
+# # time.sleep(2)
+# # setAngleGimbal(yaw,pitch)
+# # time.sleep(4)
+# while True:
+#     rval, frame = cap.read()
     
-    cv2.imshow("frame", frame) 
+#     cv2.imshow("frame", frame) 
     
-    # quit the program if you press 'q' on keyboard
-    inp = cv2.waitKey(1)
-    if inp == ord("q"): 
-        break
-    elif inp == ord("w"):
-        pitch+=1
-        setAngleGimbal(yaw,pitch)
-    elif inp == ord("s"):
-        pitch-=1
-        setAngleGimbal(yaw,pitch)
-    elif inp == ord("a"):
-        yaw-=1
-        setAngleGimbal(yaw,pitch)
-    elif inp == ord("d"):
-        yaw+=1
-        setAngleGimbal(yaw,pitch)
-    # print(yaw,pitch)
+#     # quit the program if you press 'q' on keyboard
+#     inp = cv2.waitKey(1)
+#     if inp == ord("q"): 
+#         break
+#     elif inp == ord("w"):
+#         pitch+=1
+#         setAngleGimbal(yaw,pitch)
+#     elif inp == ord("s"):
+#         pitch-=1
+#         setAngleGimbal(yaw,pitch)
+#     elif inp == ord("a"):
+#         yaw-=1
+#         setAngleGimbal(yaw,pitch)
+#     elif inp == ord("d"):
+#         yaw+=1
+#         setAngleGimbal(yaw,pitch)
+#     # print(yaw,pitch)
 		
 
-# closing the camera 
-cap.release() 
+# # closing the camera 
+# cap.release() 
 
-# closing the windows that are opened 
-cv2.destroyAllWindows() 
+# # closing the windows that are opened 
+# cv2.destroyAllWindows() 
