@@ -59,8 +59,8 @@ def tohex(val, nbits):
     return hex((val + (1 << nbits)) % (1 << nbits))
 
 def setAngleGimbal(yaw,pitch):
-    yaw = yaw*10
-    pitch = pitch *10
+    yaw = int(yaw*10)
+    pitch = int(pitch *10)
     try:
         sockfd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     except socket.error as e:
@@ -114,9 +114,9 @@ def setAngleGimbal(yaw,pitch):
 
 # initialize the camera object so that we 
 # can get frame from it 
-# cap = cv2.VideoCapture("rtsp://192.168.144.25:8554/video1") 
+cap = cv2.VideoCapture("rtsp://192.168.144.25:8554/video1") 
 
-cap = cv2.VideoCapture(0)
+# cap = cv2.VideoCapture(0)
 frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 frameHeight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 # cap.set(cv2.CAP_PROP_FPS,25)
