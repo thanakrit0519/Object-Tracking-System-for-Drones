@@ -7,6 +7,7 @@ import cv2
 import socket
 import sys
 import time
+from ultralytics import YOLO
 
 RECV_BUUF_SIZE = 64
 SERVER_PORT = 37260          # Gimbal Camera (Server) Port
@@ -145,13 +146,8 @@ GREEN = (0, 255, 0)
 RED = (0, 0, 255) 
 WHITE = (255, 255, 255) 
 BLACK = (0, 0, 0) 
+BLUE = (255, 0, 0) 
 
-# defining the fonts 
-fonts = cv2.FONT_HERSHEY_COMPLEX 
-
-# face detector object 
-#face_detector = cv2.CascadeClassifier("Haarcascade_frontalface_default.xml") 
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 # focal length finder function 
 def Focal_Length_Finder(measured_distance, real_width, width_in_rf_image): 
@@ -168,53 +164,68 @@ def Distance_finder(Focal_Length, real_face_width, face_width_in_frame):
 	# return the distance 
 	return distance 
 
-def face_data(image):
-    face_width = 0 # making face width to zero
-    centerX = 0
-    centerY = 0
-    # converting color image to gray scale image
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# def face_data(image):
+#     face_width = 0 # making face width to zero
+#     centerX = 0
+#     centerY = 0
+#     # converting color image to gray scale image
+#     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
-    faces = face_cascade.detectMultiScale(gray_image, 1.1, 9) 
-    for(x,y,h,w) in faces:
-        cv2.rectangle(image, (x, y), (x+w, y+h), GREEN, 2)
-        face_width = w
-        centerX = x+w/2
-        centerY = y+h/2
+#     faces = face_cascade.detectMultiScale(gray_image, 1.1, 9) 
+#     for(x,y,h,w) in faces:
+#         cv2.rectangle(image, (x, y), (x+w, y+h), GREEN, 2)
+#         face_width = w
+#         centerX = x+w/2
+#         centerY = y+h/2
 
         
-    return face_width,centerX,centerY
+#     return face_width,centerX,centerY
+
+def predict(chosen_model, img, conf=0.1):
+    results = chosen_model(source=img,stream=True)
+    return results
+
+def predict_and_detect(chosen_model, img, conf=0.5):
+    results = predict(chosen_model, img, conf=conf)
+
+    for result in results:
+        for box in result.boxes:
+            cv2.rectangle(img, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
+                          (int(box.xyxy[0][2]), int(box.xyxy[0][3])), BLUE, 2)
+            cv2.putText(img, f"{result.names[int(box.cls[0])]}",
+                        (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
+                        cv2.FONT_HERSHEY_PLAIN, 2, BLUE, 2)
+    return img, results
 
 
 # reading reference_image from directory 
-ref_image = cv2.imread("/home/song/CoopProject/Ref_image.jpg") 
+# ref_image = cv2.imread("/home/song/CoopProject/Ref_image.jpg") 
 
 # find the face width(pixels) in the reference_image 
-ref_image_face_width,_,__ = face_data(ref_image) 
 
 # get the focal by calling "Focal_Length_Finder" 
 # face width in reference(pixels), 
 # Known_distance(centimeters), 
 # known_width(centimeters) 
-Focal_length_found = Focal_Length_Finder( 
-	Known_distance, Known_width, ref_image_face_width) 
+# Focal_length_found = Focal_Length_Finder( 
+# 	Known_distance, Known_width, ref_image_face_width) 
 
-print(Focal_length_found) 
+# print(Focal_length_found) 
 
 # show the reference image 
-cv2.imshow("ref_image", ref_image)
+# cv2.imshow("ref_image", ref_image)
 
 # initialize the camera object so that we 
 # can get frame from it 
 # cap = cv2.VideoCapture("rtsp://192.168.144.25:8554/video1") 
-
-cap = cv2.VideoCapture(0)
-frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-frameHeight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-# cap.set(cv2.CAP_PROP_FPS,25)
-print(frameWidth,frameHeight)
-print(cap.get(cv2.CAP_PROP_FPS))
-print(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+model = YOLO("yolov8n.pt")
+cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
+# frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+# frameHeight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+# # cap.set(cv2.CAP_PROP_FPS,25)
+# print(frameWidth,frameHeight)
+# print(cap.get(cv2.CAP_PROP_FPS))
+# print(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 clat,clon = 13.75,100.5
 bearing = 70
 
@@ -228,7 +239,7 @@ pitch = 0
 while True:
     rval, frame = cap.read()
     
-    face_width_in_frame,centerX,centerY = face_data(frame)
+    # face_width_in_frame,centerX,centerY = face_data(frame)
     # face_width_in_frame = 100
     # if centerX < frameWidth:
     #     pitch-=0.1
@@ -241,39 +252,45 @@ while True:
     #     pitch-=0.1
     # setAngleGimbal(yaw,pitch)
     
-    if face_width_in_frame != 0:
-        Distance = Distance_finder(Focal_length_found, Known_width, face_width_in_frame)
+    # if face_width_in_frame != 0:
+    #     Distance = Distance_finder(Focal_length_found, Known_width, face_width_in_frame)
         
-        lat, lon = destinationPoint(clat, clon, Distance/100, bearing)
+    #     lat, lon = destinationPoint(clat, clon, Distance/100, bearing)
         
-        # draw line as background of text
-        cv2.line(frame, (30, 30), (230, 30), RED, 32) 
-        cv2.line(frame, (30, 30), (230, 30), BLACK, 28)
+    #     # draw line as background of text
+    #     cv2.line(frame, (30, 30), (230, 30), RED, 32) 
+    #     cv2.line(frame, (30, 30), (230, 30), BLACK, 28)
         
-        # Drawing Text on the screen
-        cv2.putText( frame, f"Distance: {round(Distance,2)} CM", (30, 35), fonts, 0.6, GREEN, 2)
-        cv2.putText( frame, f"Camera lat: {round(clat,6)} Camera lon: {round(clon,6)}", (30, 65), fonts, 0.6, GREEN, 1)
-        cv2.putText( frame, f"Object lat: {round(lat,6)} Object lon: {round(lon,6)}", (30, 85), fonts, 0.6, GREEN, 1)
+    #     # Drawing Text on the screen
+    #     cv2.putText( frame, f"Distance: {round(Distance,2)} CM", (30, 35), fonts, 0.6, GREEN, 2)
+    #     cv2.putText( frame, f"Camera lat: {round(clat,6)} Camera lon: {round(clon,6)}", (30, 65), fonts, 0.6, GREEN, 1)
+    #     cv2.putText( frame, f"Object lat: {round(lat,6)} Object lon: {round(lon,6)}", (30, 85), fonts, 0.6, GREEN, 1)
         
-        # show the frame on the screen 
-    cv2.imshow("frame", frame) 
+    #     # show the frame on the screen 
+    # cv2.imshow("frame", frame) 
     
+    if rval == True:
+        img,results = predict_and_detect(model,frame)
+        cv2.imshow('video output', img)
+        # k = cv2.waitKey(1)
+        # if k == ord('q'):
+        #     break
     # quit the program if you press 'q' on keyboard
-    inp = cv2.waitKey(1)
-    if inp == ord("q"): 
-        break
-    elif inp == ord("w"):
-        pitch+=1
-        setAngleGimbal(yaw,pitch)
-    elif inp == ord("s"):
-        pitch-=1
-        setAngleGimbal(yaw,pitch)
-    elif inp == ord("a"):
-        yaw-=1
-        setAngleGimbal(yaw,pitch)
-    elif inp == ord("d"):
-        yaw+=1
-        setAngleGimbal(yaw,pitch)
+        inp = cv2.waitKey(1)
+        if inp == ord("q"): 
+            break
+        elif inp == ord("w"):
+            pitch+=1
+            setAngleGimbal(yaw,pitch)
+        elif inp == ord("s"):
+            pitch-=1
+            setAngleGimbal(yaw,pitch)
+        elif inp == ord("a"):
+            yaw-=1
+            setAngleGimbal(yaw,pitch)
+        elif inp == ord("d"):
+            yaw+=1
+            setAngleGimbal(yaw,pitch)
     # print(yaw,pitch)
 		
 

@@ -14,13 +14,13 @@ object_class = [
   'bus',
   'motor']
 BLUE = (255, 0, 0) 
-model = YOLO("trained_model_visdrone2019_1_7_2024\yolov8l-p2.pt")
-cap = cv2.VideoCapture(0)
+model = YOLO("yolov8n.pt")
+cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
 w=cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 h=cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 print(w,h)
 def predict(chosen_model, img, conf=0.1):
-    results = chosen_model.predict(img, conf=conf,imgsz=(h,w))
+    results = chosen_model(source=img,stream=True)
     return results
 
 def predict_and_detect(chosen_model, img, conf=0.5):
