@@ -181,21 +181,27 @@ def Distance_finder(Focal_Length, real_face_width, face_width_in_frame):
         
 #     return face_width,centerX,centerY
 
-def predict(chosen_model, img, conf=0.1):
+def predict(chosen_model, img, conf):
     results = chosen_model(source=img,stream=True)
     return results
 
 def predict_and_detect(chosen_model, img, conf=0.5):
     results = predict(chosen_model, img, conf=conf)
-
+    i=0
+    output = []
     for result in results:
         for box in result.boxes:
-            cv2.rectangle(img, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
-                          (int(box.xyxy[0][2]), int(box.xyxy[0][3])), BLUE, 2)
-            cv2.putText(img, f"{result.names[int(box.cls[0])]}",
-                        (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
-                        cv2.FONT_HERSHEY_PLAIN, 2, BLUE, 2)
-    return img, results
+            if result.names[int(box.cls[0])] == 'person' or result.names[int(box.cls[0])] == 'car':
+                center_w = (int(box.xyxy[0][1]) - int(box.xyxy[0][0]) / 2) + int(box.xyxy[0][0])
+                center_h = (int(box.xyxy[0][2]) - int(box.xyxy[0][0]) / 2) + int(box.xyxy[0][0])
+                output.append([i,center_w,center_h])
+                i+=1
+                cv2.rectangle(img, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
+                            (int(box.xyxy[0][2]), int(box.xyxy[0][3])), BLUE, 2)
+                cv2.putText(img, f"{result.names[int(box.cls[0])]}",
+                            (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
+                            cv2.FONT_HERSHEY_PLAIN, 2, BLUE, 2)
+    return img, output
 
 
 # reading reference_image from directory 
@@ -218,24 +224,25 @@ def predict_and_detect(chosen_model, img, conf=0.5):
 # initialize the camera object so that we 
 # can get frame from it 
 # cap = cv2.VideoCapture("rtsp://192.168.144.25:8554/video1") 
+yaw = -90
+pitch = 0
+time.sleep(2)
+setAngleGimbal(yaw,pitch)
+time.sleep(4)
 model = YOLO("yolov8n.pt")
 cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
-# frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-# frameHeight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+frameHeight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 # # cap.set(cv2.CAP_PROP_FPS,25)
-# print(frameWidth,frameHeight)
+print(frameWidth,frameHeight)
 # print(cap.get(cv2.CAP_PROP_FPS))
 # print(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 clat,clon = 13.75,100.5
 bearing = 70
 
 
-yaw = -90
-pitch = 0
-# rval, frame = cap.read()
-# time.sleep(2)
-# setAngleGimbal(yaw,pitch)
-# time.sleep(4)
+track_id = -1
+no_track = 0
 while True:
     rval, frame = cap.read()
     
@@ -272,10 +279,18 @@ while True:
     if rval == True:
         img,results = predict_and_detect(model,frame)
         cv2.imshow('video output', img)
-        # k = cv2.waitKey(1)
-        # if k == ord('q'):
-        #     break
-    # quit the program if you press 'q' on keyboard
+        
+        # if centerX < frameWidth:
+        #     pitch-=0.1
+        # elif centerX > frameWidth:
+        #     pitch+=0.1
+        
+        # if centerY < frameHeight:
+        #     pitch+=0.1
+        # elif centerY > frameHeight:
+        #     pitch-=0.1
+        # setAngleGimbal(yaw,pitch)
+        
         inp = cv2.waitKey(1)
         if inp == ord("q"): 
             break
@@ -291,6 +306,11 @@ while True:
         elif inp == ord("d"):
             yaw+=1
             setAngleGimbal(yaw,pitch)
+        elif 48 <= inp <= 57:
+            track_id = inp - 48
+            no_track = 1
+        elif inp == ord("x"):
+            no_track = 0
     # print(yaw,pitch)
 		
 
