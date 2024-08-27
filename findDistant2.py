@@ -23,7 +23,6 @@ RED = (0, 0, 255)
 WHITE = (255, 255, 255) 
 BLACK = (0, 0, 0) 
 BLUE = (255, 0, 0) 
-
 fonts = cv2.FONT_HERSHEY_COMPLEX 
 
 # distance estimation function 
@@ -33,7 +32,6 @@ def Distance_finder(k, s, pitch,c):
 
 	# return the distance 
 	return distance 
-
 
 def predict(chosen_model, img, conf):
     results = chosen_model(source=img,stream=True)
@@ -134,7 +132,6 @@ while True:
             on_track = 0
     # print(yaw,pitch)
 		
-
 # closing the camera 
 cap.release() 
 

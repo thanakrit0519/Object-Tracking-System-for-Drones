@@ -34,7 +34,6 @@ def Distance_finder(k, s, pitch,c):
 	# return the distance 
 	return distance 
 
-
 def predict(chosen_model, img, conf):
     results = chosen_model(source=img,stream=True)
     return results
@@ -63,14 +62,15 @@ pitch = 0
 time.sleep(2)
 setAngleGimbal(yaw,pitch)
 time.sleep(4)
-model = YOLO("yolov8n.pt")
+model = YOLO("/home/song/CoopProject/trained_model_visdrone2019_1_7_2024/yolov10m.pt")
 cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
+# cap = cv2.VideoCapture(0)
 frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 frameHeight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 # # cap.set(cv2.CAP_PROP_FPS,25)
+# cap.set(cv2.CAP_PROP_FRAME_WIDTH,640)
+# cap.set(cv2.CAP_PROP_FRAME_HEIGHT,360)
 print(frameWidth,frameHeight)
-# cap.set(cv2.CAP_PROP_FRAME_WIDTH,1280)
-# cap.set(cv2.CAP_PROP_FRAME_HEIGHT,720)
 # print(cap.get(cv2.CAP_PROP_FPS))
 # print(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 clat,clon = 13.75,100.5
@@ -85,7 +85,6 @@ while True:
     if rval == True:
         img,results = predict_and_detect(model,frame)
         
-        
         if on_track == 1 and len(results) > 0:
             if results[track_id][1] < frameWidth/2 - 20:
                 yaw+=0.2
@@ -99,7 +98,7 @@ while True:
                 yaw = -180 + 0.2
             elif yaw < -180:
                 yaw = 180 - 0.2
-            setAngleGimbal(yaw,pitch)
+            # setAngleGimbal(yaw,pitch)
             # Distance = Distance_finder(100, results[track_id][3],pitch,1)
             # lat, lon,_ = cal_objectGPS2(clat, clon, Distance/100, bearing)
             # cv2.line(img, (30, 30), (230, 30), RED, 32) 
