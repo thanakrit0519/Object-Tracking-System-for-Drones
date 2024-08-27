@@ -54,8 +54,9 @@ pitch = 0
 time.sleep(2)
 setAngleGimbal(yaw,pitch)
 time.sleep(4)
-model = YOLO("yolov8n.pt")
+model = YOLO("/home/song/CoopProject/trained_model_visdrone2019_1_7_2024/yolov10m.pt")
 cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
+# cap = cv2.VideoCapture(0)
 frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 frameHeight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 # # cap.set(cv2.CAP_PROP_FPS,25)
@@ -129,3 +130,4 @@ cap.release()
 
 # closing the windows that are opened 
 cv2.destroyAllWindows() 
+
