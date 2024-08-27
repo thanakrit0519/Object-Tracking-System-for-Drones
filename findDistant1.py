@@ -1,132 +1,129 @@
 # install opencv "pip install opencv-python" 
-import math as Math
+# import sys
+
+# sys.path.append('/users/user/appdata/local/packages/pythonsoftwarefoundation.python.3.9_qbz5n2kfra8p0/localcache/local-packages/python39/site-packages')
 import cv2 
+import time
+import math
+from ultralytics import YOLO
+from controlGimbal import setAngleGimbal
+from calLatLong002 import cal_objectGPS1
 
-def destinationPoint(lat1, lon1, distance, bearing, radius=6371e3):
+# distance from camera to object(face) measured 
+# centimeter 
+Known_distance = 500
 
-    δ = distance / radius  # angular distance in radians
-    θ = bearing / 180 * Math.pi
-
-    lat1 = lat1 / 180 * Math.pi
-    lon1 = lon1 / 180 * Math.pi
-
-    sinlat2 = Math.sin(lat1) * Math.cos(δ) + Math.cos(lat1) * Math.sin(δ) * Math.cos(θ)
-    lat2 = Math.asin(sinlat2)
-    y = Math.sin(θ) * Math.sin(δ) * Math.cos(lat1)
-    x = Math.cos(δ) - Math.sin(lat1) * sinlat2
-    lon2 = lon1 + Math.atan2(y, x)
-
-    lat = lat2 * 180 / Math.pi
-    lon = lon2 * 180 / Math.pi
-
-    lon = (lon + 540) % 360 - 180
-
-    return lat, lon
-
-
-Known_distance = 50
-
-Known_width = 14.28 #cm
+# width of face in the real world or Object Plane 
+# centimeter 
+Known_height = 171
 
 # Colors 
 GREEN = (0, 255, 0) 
 RED = (0, 0, 255) 
 WHITE = (255, 255, 255) 
 BLACK = (0, 0, 0) 
-
-# defining the fonts 
+BLUE = (255, 0, 0) 
 fonts = cv2.FONT_HERSHEY_COMPLEX 
 
-# face detector object 
-#face_detector = cv2.CascadeClassifier("Haarcascade_frontalface_default.xml") 
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-# focal length finder function 
-def Focal_Length_Finder(measured_distance, real_width, width_in_rf_image): 
+def predict(chosen_model, img, conf):
+    results = chosen_model(source=img,stream=True)
+    return results
 
-	# finding the focal length 
-	focal_length = (width_in_rf_image * measured_distance) / real_width 
-	return focal_length 
+def predict_and_detect(chosen_model, img, conf=0.5):
+    results = predict(chosen_model, img, conf=conf)
+    i=0
+    output = []
+    for result in results:
+        for box in result.boxes:
+            if result.names[int(box.cls[0])] == 'person' or result.names[int(box.cls[0])] == 'car':
+                center_w = (int(box.xyxy[0][1]) - int(box.xyxy[0][0]) / 2) + int(box.xyxy[0][0])
+                center_h = (int(box.xyxy[0][2]) - int(box.xyxy[0][0]) / 2) + int(box.xyxy[0][0])
+                output.append([i,center_w,center_h,int(box.xyxy[0][2]) - int(box.xyxy[0][0])])
+                
+                cv2.rectangle(img, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
+                            (int(box.xyxy[0][2]), int(box.xyxy[0][3])), BLUE, 2)
+                cv2.putText(img, f"{result.names[int(box.cls[0])]} id : {i}",
+                            (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
+                            cv2.FONT_HERSHEY_PLAIN, 2, BLUE, 2)
+                i+=1
+    return img, output
 
-# distance estimation function 
-def Distance_finder(drone_altitude, camera_angle): 
-
-	distance = Math.tan(camera_angle / 180 * Math.pi) * drone_altitude
-	# return the distance 
-	return distance 
-
-def face_data(image):
-    face_width = 0 # making face width to zero
-    center_face_x,center_face_y=0,0
-    
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    
-    faces = face_cascade.detectMultiScale(gray_image, 1.1, 9) 
-    for(x,y,h,w) in faces:
-        cv2.rectangle(image, (x, y), (x+w, y+h), GREEN, 2)
-        center_face_x = x+w/2
-        center_face_y = y+h/2
-
-    # return the face width in pixel
-    return center_face_x,center_face_y
-
-
-# reading reference_image from directory 
-# ref_image = cv2.imread("Ref_image.jpg") 
-
-# # find the face width(pixels) in the reference_image 
-# ref_image_face_width = face_data(ref_image) 
-
-# Focal_length_found = Focal_Length_Finder( 
-# 	Known_distance, Known_width, ref_image_face_width) 
-
-# print(Focal_length_found) 
-
-# # show the reference image 
-# cv2.imshow("ref_image", ref_image)
-
-cap = cv2.VideoCapture("rtsp://192.168.144.25:8554/video1") 
-
+yaw = -45
+pitch = 0
+time.sleep(2)
+setAngleGimbal(yaw,pitch)
+time.sleep(4)
+model = YOLO("yolov8n.pt")
+cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
+frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+frameHeight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+# # cap.set(cv2.CAP_PROP_FPS,25)
+print(frameWidth,frameHeight)
+# cap.set(cv2.CAP_PROP_FRAME_WIDTH,1280)
+# cap.set(cv2.CAP_PROP_FRAME_HEIGHT,720)
+# print(cap.get(cv2.CAP_PROP_FPS))
+# print(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 clat,clon = 13.75,100.5
 bearing = 70
-drone_altitude = 100
-camera_angle = 60
-# looping through frame, incoming from 
-# camera/video 
-while True:
-    _, frame = cap.read()
-    
-    center_face_x,center_face_y = face_data(frame)
-        
-    Distance = Distance_finder(drone_altitude,camera_angle)
-        
-    lat, lon = destinationPoint(clat, clon, Distance, bearing)
-        
-        # draw line as background of text
-    cv2.line(frame, (30, 30), (230, 30), RED, 32) 
-    cv2.line(frame, (30, 30), (230, 30), BLACK, 28)
-        
-        # Drawing Text on the screen
-    cv2.putText( frame, f"Distance: {round(Distance,2)} M", (30, 35), fonts, 0.6, GREEN, 2)
-    cv2.putText( frame, f"Camera lat: {round(clat,6)} Camera lon: {round(clon,6)}", (30, 65), fonts, 0.6, GREEN, 1)
-    cv2.putText( frame, f"Object lat: {round(lat,6)} Object lon: {round(lon,6)}", (30, 85), fonts, 0.6, GREEN, 1)
-        
-        # show the frame on the screen 
-    cv2.imshow("frame", frame) 
-        
-        # quit the program if you press 'q' on keyboard
-    if cv2.waitKey(1) == ord("q"): 
-        break
-    
-    while not (680 >= center_face_x >= 600 and 400 >= center_face_y >= 320):
-        if  not (680 >= center_face_x >= 600):
-            if cv2.waitKey(1) == ord("a"):
-                center_face_x = 640
-        elif not (400 >= center_face_y >= 320):
-            if cv2.waitKey(1) == ord("a"):
-                center_face_y = 360
-		
+altitude = 50
 
+track_id = -1
+on_track = 0
+while True:
+    rval, frame = cap.read()
+    
+    if rval == True:
+        img,results = predict_and_detect(model,frame)
+        
+        
+        if on_track == 1 and len(results) > 0:
+            if results[track_id][1] < frameWidth/2 - 20:
+                yaw+=0.2
+            elif results[track_id][1] > frameWidth/2 + 20:
+                yaw-=0.2
+            if results[track_id][2] < frameHeight/2 - 20:
+                pitch+=0.2
+            elif results[track_id][2] > frameHeight/2 + 20:
+                pitch-=0.2
+            if yaw > 180 :
+                yaw = -180 + 0.2
+            elif yaw < -180:
+                yaw = 180 - 0.2
+            setAngleGimbal(yaw,pitch)
+            lat, lon,_ ,Distance= cal_objectGPS1(clat, clon, altitude, bearing ,yaw)
+            cv2.line(img, (30, 30), (230, 30), RED, 32) 
+            cv2.line(img, (30, 30), (230, 30), BLACK, 28)
+            
+            # Drawing Text on the screen
+            cv2.putText( img, f"Distance: {round(Distance,2)} CM", (30, 35), fonts, 0.6, GREEN, 2)
+            cv2.putText( img, f"Camera lat: {round(clat,6)} Camera lon: {round(clon,6)}", (30, 65), fonts, 0.6, GREEN, 1)
+            cv2.putText( img, f"Object lat: {round(lat,6)} Object lon: {round(lon,6)}", (30, 85), fonts, 0.6, GREEN, 1)
+            
+        cv2.imshow('video output', img)
+        
+        inp = cv2.waitKey(1)
+        if inp == ord("q"): 
+            break
+        elif inp == ord("w"):
+            pitch+=1
+            setAngleGimbal(yaw,pitch)
+        elif inp == ord("s"):
+            pitch-=1
+            setAngleGimbal(yaw,pitch)
+        elif inp == ord("a"):
+            yaw-=1
+            setAngleGimbal(yaw,pitch)
+        elif inp == ord("d"):
+            yaw+=1
+            setAngleGimbal(yaw,pitch)
+        elif 48 <= inp <= 57:
+            track_id = inp - 48
+            on_track = 1
+        elif inp == ord("x"):
+            on_track = 0
+    # print(yaw,pitch)
+		
 # closing the camera 
 cap.release() 
 

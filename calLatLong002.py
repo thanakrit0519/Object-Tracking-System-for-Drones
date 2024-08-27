@@ -87,7 +87,7 @@ def  vinc_pt(phi1, lembda1, alpha12, s,f=1/298.257223563,a=6378137.0) :
 def cal_objectGPS1(lat1,lon1,altitude,pitch,yaw):
     distance = altitude * math.tan((90+pitch)/180*math.pi)
     print(distance)
-    return vinc_pt(lat1,lon1,yaw,distance)
+    return vinc_pt(lat1,lon1,yaw,distance),distance
 
 def cal_objectGPS2(lat1,lon1,distance,yaw):
     return vinc_pt(lat1,lon1,yaw,distance)

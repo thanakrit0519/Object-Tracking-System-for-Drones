@@ -25,13 +25,27 @@ BLACK = (0, 0, 0)
 BLUE = (255, 0, 0) 
 fonts = cv2.FONT_HERSHEY_COMPLEX 
 
-# distance estimation function 
-def Distance_finder(k, s, pitch,c): 
+# def focal_length_finder(height_in_rf_image, measured_distance, real_height): 
 
-	distance = (k*s)*math.cos(pitch) + c
+# 	focal_length = (height_in_rf_image * measured_distance) / real_height
 
-	# return the distance 
-	return distance 
+# 	
+# 	return focal_length 
+
+focal_length = 900
+real_height=171
+
+def Distance_finder(focal_length,height_in_rf_image,real_height):
+    distance = focal_length*real_height/height_in_rf_image
+    return distance
+
+# m=1
+# c=1
+
+# def Distance_finder(m,x,c):
+#     distance = m*x+c
+#     return distance
+
 
 def predict(chosen_model, img, conf):
     results = chosen_model(source=img,stream=True)
@@ -98,8 +112,13 @@ while True:
             elif yaw < -180:
                 yaw = 180 - 0.2
             setAngleGimbal(yaw,pitch)
-            Distance = Distance_finder(100, results[track_id][3],pitch,1)
+            
+            Distance = Distance_finder(focal_length, results[track_id][3],real_height)
+            # Distance = Distance_finder(m,results[track_id][3],c)
+            
+            Distance = Distance * math.sin(pitch * math.pi / 180)
             lat, lon,_ = cal_objectGPS2(clat, clon, Distance/100, bearing)
+            
             cv2.line(img, (30, 30), (230, 30), RED, 32) 
             cv2.line(img, (30, 30), (230, 30), BLACK, 28)
             
