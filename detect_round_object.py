@@ -1,10 +1,25 @@
 import cv2 
 import numpy as np 
+from controlGimbal import setAngleGimbal
+from calLatLong002 import cal_objectGPS1
+import time
   
 # img = cv2.imread('eyes.jpg', cv2.IMREAD_COLOR) 
 
+yaw = -90
+pitch = 0
+# time.sleep(2)
+# setAngleGimbal(yaw,pitch)
+# time.sleep(4)
+cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
 
-cap = cv2.VideoCapture(0)
+# cap = cv2.VideoCapture(0)
+
+frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+frameHeight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+print(frameWidth,frameHeight)
+track_id = -1
+on_track = 0
 
 while True:
     rval, img = cap.read()
@@ -34,10 +49,46 @@ while True:
     
             # Draw a small circle (of radius 1) to show the center. 
             cv2.circle(img, (a, b), 1, (0, 0, 255), 3) 
-        cv2.imshow("Detected Circle", img) 
-        inp = cv2.waitKey(1)
-        if inp == ord("q"): 
-            break
+            
+            if on_track == 1:
+                if a < frameWidth/2 - 20:
+                    yaw+=0.2
+                elif a > frameWidth/2 + 20:
+                    yaw-=0.2
+                if b < frameHeight/2 - 20:
+                    pitch+=0.2
+                elif b > frameHeight/2 + 20:
+                    pitch-=0.2
+                if yaw > 180 :
+                    yaw = -180 + 0.2
+                elif yaw < -180:
+                    yaw = 180 - 0.2
+                setAngleGimbal(yaw,pitch)
+            
+    cv2.imshow("Detected Circle", img) 
+        
+        
+        
+    inp = cv2.waitKey(1)
+    if inp == ord("q"): 
+        break
+    elif inp == ord("w"):
+        pitch+=1
+        setAngleGimbal(yaw,pitch)
+    elif inp == ord("s"):
+        pitch-=1
+        setAngleGimbal(yaw,pitch)
+    elif inp == ord("a"):
+        yaw-=1
+        setAngleGimbal(yaw,pitch)
+    elif inp == ord("d"):
+        yaw+=1
+        setAngleGimbal(yaw,pitch)
+    elif 48 <= inp <= 57:
+        track_id = inp - 48
+        on_track = 1
+    elif inp == ord("x"):
+        on_track = 0
             # cv2.waitKey(0) 
 cap.release() 
 

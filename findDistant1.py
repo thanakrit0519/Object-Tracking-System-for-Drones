@@ -49,7 +49,7 @@ def predict_and_detect(chosen_model, img, conf=0.5):
                 i+=1
     return img, output
 
-yaw = -45
+yaw = -90
 pitch = 0
 time.sleep(2)
 setAngleGimbal(yaw,pitch)
