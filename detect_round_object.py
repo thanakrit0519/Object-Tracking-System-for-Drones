@@ -11,9 +11,9 @@ pitch = 0
 # time.sleep(2)
 # setAngleGimbal(yaw,pitch)
 # time.sleep(4)
-cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
+# cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
 
-# cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)
 
 frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 frameHeight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
