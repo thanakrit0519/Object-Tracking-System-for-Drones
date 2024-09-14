@@ -57,25 +57,25 @@ def predict_and_detect(chosen_model, img, conf=0.5):
     output = []
     for result in results:
         for box in result.boxes:
-            if result.names[int(box.cls[0])] == 'person' or result.names[int(box.cls[0])] == 'car':
-                center_w = (int(box.xyxy[0][1]) - int(box.xyxy[0][0]) / 2) + int(box.xyxy[0][0])
-                center_h = (int(box.xyxy[0][2]) - int(box.xyxy[0][0]) / 2) + int(box.xyxy[0][0])
-                output.append([i,center_w,center_h,int(box.xyxy[0][2]) - int(box.xyxy[0][0])])
-                
-                cv2.rectangle(img, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
-                            (int(box.xyxy[0][2]), int(box.xyxy[0][3])), BLUE, 2)
-                cv2.putText(img, f"{result.names[int(box.cls[0])]} id : {i}",
-                            (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
-                            cv2.FONT_HERSHEY_PLAIN, 2, BLUE, 2)
-                i+=1
+            # if result.names[int(box.cls[0])] == 'person' or result.names[int(box.cls[0])] == 'car':
+            center_w = (int(box.xyxy[0][1]) - int(box.xyxy[0][0]) / 2) + int(box.xyxy[0][0])
+            center_h = (int(box.xyxy[0][2]) - int(box.xyxy[0][0]) / 2) + int(box.xyxy[0][0])
+            output.append([i,center_w,center_h,int(box.xyxy[0][2]) - int(box.xyxy[0][0])])
+            
+            cv2.rectangle(img, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
+                        (int(box.xyxy[0][2]), int(box.xyxy[0][3])), BLUE, 2)
+            cv2.putText(img, f"{result.names[int(box.cls[0])]} id : {i}",
+                        (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
+                        cv2.FONT_HERSHEY_PLAIN, 2, BLUE, 2)
+            i+=1
     return img, output
 
-yaw = -45
+yaw = -90
 pitch = 0
-time.sleep(2)
-setAngleGimbal(yaw,pitch)
-time.sleep(4)
-model = YOLO("/home/song/CoopProject/trained_model_visdrone2019_1_7_2024/yolov10m.pt")
+# time.sleep(2)
+# setAngleGimbal(yaw,pitch)
+# time.sleep(4)
+model = YOLO("C:/CoopProject/trained_model_visdrone2019_1_7_2024/yolov9m.pt")
 cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
 frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 frameHeight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)

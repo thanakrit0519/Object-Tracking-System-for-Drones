@@ -59,10 +59,10 @@ def predict_and_detect(chosen_model, img, conf=0.5):
 
 yaw = -45
 pitch = 0
-time.sleep(2)
-setAngleGimbal(yaw,pitch)
-time.sleep(4)
-model = YOLO("/home/song/CoopProject/trained_model_visdrone2019_1_7_2024/yolov10m.pt")
+# time.sleep(2)
+# setAngleGimbal(yaw,pitch)
+# time.sleep(4)
+model = YOLO("C:/CoopProject/trained_model_visdrone2019_1_7_2024/yolov8m-p2.pt")
 # cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
 cap = cv2.VideoCapture(0)
 frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
