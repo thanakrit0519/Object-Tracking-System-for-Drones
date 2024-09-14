@@ -8,9 +8,9 @@ import time
 
 yaw = -90
 pitch = 0
-# time.sleep(2)
-# setAngleGimbal(yaw,pitch)
-# time.sleep(4)
+time.sleep(2)
+setAngleGimbal(yaw,pitch)
+time.sleep(4)
 cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
 
 # cap = cv2.VideoCapture(0)
@@ -33,8 +33,8 @@ while True:
         
         # Apply Hough transform on the blurred image. 
         detected_circles = cv2.HoughCircles(gray_blurred,  
-                        cv2.HOUGH_GRADIENT, 1, 20, param1 = 50, 
-                    param2 = 30, minRadius = 1, maxRadius = 40) 
+                        cv2.HOUGH_GRADIENT, 1, 20, param1 = 80, 
+                    param2 = 60, minRadius = 5, maxRadius = 40) 
         
         # Draw circles that are detected. 
         if detected_circles is not None: 
@@ -52,20 +52,24 @@ while True:
                 cv2.circle(img, (a, b), 1, (0, 0, 255), 3) 
                 
                 if on_track == 1:
-                    if a < frameWidth/2 - 20:
+                    if a < int(frameWidth)/2 - 10:
                         yaw+=0.2
-                    elif a > frameWidth/2 + 20:
+                    elif a > int(frameWidth)/2 + 10:
                         yaw-=0.2
-                    if b < frameHeight/2 - 20:
+                    if b < int(frameHeight)/2 - 10:
                         pitch+=0.2
-                    elif b > frameHeight/2 + 20:
+                    elif b > int(frameHeight)/2 + 10:
                         pitch-=0.2
+                    else:
+                        on_track = 0
                     if yaw > 180 :
                         yaw = -180 + 0.2
                     elif yaw < -180:
                         yaw = 180 - 0.2
+                    # time.sleep(0.5)
                     setAngleGimbal(yaw,pitch)
-                
+                    
+        cv2.circle(img, (int(frameWidth)//2,int(frameHeight)//2), 4, (255, 0, 0), 2)        
         cv2.imshow("Detected Circle", img) 
             
             
@@ -79,10 +83,10 @@ while True:
         elif inp == ord("s"):
             pitch-=1
             setAngleGimbal(yaw,pitch)
-        elif inp == ord("a"):
+        elif inp == ord("d"):
             yaw-=1
             setAngleGimbal(yaw,pitch)
-        elif inp == ord("d"):
+        elif inp == ord("a"):
             yaw+=1
             setAngleGimbal(yaw,pitch)
         elif 48 <= inp <= 57:
