@@ -10,9 +10,9 @@ os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;5000" # 5 seconds
 
 yaw = -90
 pitch = 0
-# time.sleep(2)
-# setAngleGimbal(yaw,pitch)
-# time.sleep(4)
+time.sleep(2)
+setAngleGimbal(yaw,pitch)
+time.sleep(4)
 cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
 
 # cap = cv2.VideoCapture(0)
@@ -23,9 +23,11 @@ print(frameWidth,frameHeight)
 track_id = -1
 on_track = 0
 
+moveTime=0
+
 while True:
     rval, img = cap.read()
-  
+    # time.sleep(1)
     # Convert to grayscale. 
     if rval :
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
@@ -52,24 +54,27 @@ while True:
         
                 # Draw a small circle (of radius 1) to show the center. 
                 cv2.circle(img, (a, b), 1, (0, 0, 255), 3) 
-                
+                # print(time.time())
                 if on_track == 1:
-                    if a < int(frameWidth)/2 - 3:
-                        yaw+=0.2
-                    elif a > int(frameWidth)/2 + 3:
-                        yaw-=0.2
-                    if b < int(frameHeight)/2 - 3:
-                        pitch+=0.2
-                    elif b > int(frameHeight)/2 + 3:
-                        pitch-=0.2
-                    else:
-                        on_track = 0
-                    if yaw > 180 :
-                        yaw = -180 + 0.2
-                    elif yaw < -180:
-                        yaw = 180 - 0.2
-                    time.sleep(1)
-                    setAngleGimbal(yaw,pitch)
+                    if time.time() - moveTime > 1.5:
+                        if a < int(frameWidth)/2 - 1:
+                            yaw+=0.2
+                        elif a > int(frameWidth)/2 + 1:
+                            yaw-=0.2
+                        if b < int(frameHeight)/2 - 1:
+                            pitch+=0.2
+                        elif b > int(frameHeight)/2 + 1:
+                            pitch-=0.2
+                        else:
+                            on_track = 0
+                            print("Finish")
+                            time.sleep(2)
+                        if yaw > 180 :
+                            yaw = -180 + 0.2
+                        elif yaw < -180:
+                            yaw = 180 - 0.2
+                        setAngleGimbal(yaw,pitch)
+                        moveTime = time.time()
                     
         cv2.circle(img, (int(frameWidth)//2,int(frameHeight)//2), 4, (255, 0, 0), 2)        
         cv2.imshow("Detected Circle", img) 
