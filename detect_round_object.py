@@ -5,12 +5,14 @@ from calLatLong002 import cal_objectGPS1
 import time
   
 # img = cv2.imread('eyes.jpg', cv2.IMREAD_COLOR) 
+import os
+os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;5000" # 5 seconds 
 
 yaw = -90
 pitch = 0
-time.sleep(2)
-setAngleGimbal(yaw,pitch)
-time.sleep(4)
+# time.sleep(2)
+# setAngleGimbal(yaw,pitch)
+# time.sleep(4)
 cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
 
 # cap = cv2.VideoCapture(0)
@@ -52,13 +54,13 @@ while True:
                 cv2.circle(img, (a, b), 1, (0, 0, 255), 3) 
                 
                 if on_track == 1:
-                    if a < int(frameWidth)/2 - 10:
+                    if a < int(frameWidth)/2 - 3:
                         yaw+=0.2
-                    elif a > int(frameWidth)/2 + 10:
+                    elif a > int(frameWidth)/2 + 3:
                         yaw-=0.2
-                    if b < int(frameHeight)/2 - 10:
+                    if b < int(frameHeight)/2 - 3:
                         pitch+=0.2
-                    elif b > int(frameHeight)/2 + 10:
+                    elif b > int(frameHeight)/2 + 3:
                         pitch-=0.2
                     else:
                         on_track = 0
@@ -66,7 +68,7 @@ while True:
                         yaw = -180 + 0.2
                     elif yaw < -180:
                         yaw = 180 - 0.2
-                    # time.sleep(0.5)
+                    time.sleep(1)
                     setAngleGimbal(yaw,pitch)
                     
         cv2.circle(img, (int(frameWidth)//2,int(frameHeight)//2), 4, (255, 0, 0), 2)        
