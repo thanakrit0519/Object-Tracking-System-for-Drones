@@ -1,6 +1,6 @@
 import cv2 
 import numpy as np 
-from controlGimbal import setAngleGimbal
+from controlGimbal import setAngleGimbal, Zoom
 from calLatLong002 import cal_objectGPS1
 import time
   
@@ -24,7 +24,7 @@ track_id = -1
 on_track = 0
 
 moveTime=0
-
+x=1
 while True:
     rval, img = cap.read()
     # time.sleep(1)
@@ -38,7 +38,7 @@ while True:
         # Apply Hough transform on the blurred image. 
         detected_circles = cv2.HoughCircles(gray_blurred,  
                         cv2.HOUGH_GRADIENT, 1, 20, param1 = 80, 
-                    param2 = 60, minRadius = 5, maxRadius = 40) 
+                    param2 = 60, minRadius = 1, maxRadius = 200) 
         
         # Draw circles that are detected. 
         if detected_circles is not None: 
@@ -56,23 +56,26 @@ while True:
                 cv2.circle(img, (a, b), 1, (0, 0, 255), 3) 
                 # print(time.time())
                 if on_track == 1:
-                    if time.time() - moveTime > 1.5:
-                        if a < int(frameWidth)/2 - 1:
-                            yaw+=0.2
-                        elif a > int(frameWidth)/2 + 1:
-                            yaw-=0.2
-                        if b < int(frameHeight)/2 - 1:
-                            pitch+=0.2
-                        elif b > int(frameHeight)/2 + 1:
-                            pitch-=0.2
+                    if time.time() - moveTime > 6:
+                        if a < int(frameWidth)/2: # -
+                            yaw+=0.1
+                        elif a > int(frameWidth)/2 :
+                            yaw-=0.1
+                        if b < int(frameHeight)/2:
+                            pitch+=0.1
+                        elif b > int(frameHeight)/2 :
+                            pitch-=0.1
                         else:
                             on_track = 0
                             print("Finish")
+                            print(a,b,r*2)
+                            print(yaw,pitch)
+                            break
                             time.sleep(2)
                         if yaw > 180 :
-                            yaw = -180 + 0.2
+                            yaw = -180 + 0.1
                         elif yaw < -180:
-                            yaw = 180 - 0.2
+                            yaw = 180 - 0.1
                         setAngleGimbal(yaw,pitch)
                         moveTime = time.time()
                     
@@ -101,6 +104,18 @@ while True:
             on_track = 1
         elif inp == ord("x"):
             on_track = 0
+        elif inp == ord("i"):
+            x=x+0.1
+            if x > 30:
+                x=30
+            print(x)
+            Zoom(x)
+        elif inp == ord("o"):
+            x=x-0.1
+            if x < 1:
+                x=1
+            print(x)
+            Zoom(x)
             # cv2.waitKey(0) 
 cap.release() 
 
