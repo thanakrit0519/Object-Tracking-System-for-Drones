@@ -15,6 +15,9 @@ setAngleGimbal(yaw,pitch)
 time.sleep(4)
 cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/video1')
 
+# vlc
+# ffmpeg
+
 # cap = cv2.VideoCapture(0)
 
 frameWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
