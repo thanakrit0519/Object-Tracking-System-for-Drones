@@ -86,14 +86,14 @@ def setAngleGimbal(yaw,pitch):
     data = [0x55,0x66,0x01,0x04,0x00,0x00,0x00,0x0e,yaw2,yaw1,pitch2,pitch1]
     # data = [0x55,0x66,0x01,0x00,0x00,0x00,0x00,0x0d]
     crc=CRC16_cal(data)
-    print(hex(crc))
+    # print(hex(crc))
     data.append(crc&0x00ff)
     data.append(crc>>8)
-    print(data)
+    # print(data)
     send_buf = bytearray(data)  # Frame protocol of the relevant functions in hexadecimal
 
     # Send frame data
-    print("Send HEX data")
+    # print("Send HEX data")
     try:
         sockfd.sendto(send_buf, send_addr)
     except socket.error as e:
@@ -104,10 +104,10 @@ def setAngleGimbal(yaw,pitch):
     recv_buf, addr = sockfd.recvfrom(RECV_BUUF_SIZE)
 
     # print the received data in hexadecimal
-    print("Received HEX data: ", end="")
-    for byte in recv_buf:
-        print(f"{byte:02x} ", end="")
-    print()
+    # print("Received HEX data: ", end="")
+    # for byte in recv_buf:
+    #     print(f"{byte:02x} ", end="")
+    # print()
 
     # close socket
     sockfd.close()
@@ -140,21 +140,21 @@ def Zoom(x):
     send_buf = bytearray(data)  # Frame protocol of the relevant functions in hexadecimal
 
     # Send frame data
-    print("Send HEX data")
+    # print("Send HEX data")
     try:
         sockfd.sendto(send_buf, send_addr)
     except socket.error as e:
-        print(f"sendto error: {e}")
+        # print(f"sendto error: {e}")
         sys.exit(1)
 
     # Receive the responding data from gimbal camera
     recv_buf, addr = sockfd.recvfrom(RECV_BUUF_SIZE)
 
     # print the received data in hexadecimal
-    print("Received HEX data: ", end="")
-    for byte in recv_buf:
-        print(f"{byte:02x} ", end="")
-    print()
+    # print("Received HEX data: ", end="")
+    # for byte in recv_buf:
+    #     print(f"{byte:02x} ", end="")
+    # print()
 
     # close socket
     sockfd.close()

@@ -35,7 +35,7 @@ while True:
     # Convert to grayscale. 
     if rval :
         
-        if time.time() - detectTime > 0.5:
+        if time.time() - detectTime > 0.7:
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
             
             # # Blur using 3 * 3 kernel. 
@@ -44,7 +44,7 @@ while True:
             # # Apply Hough transform on the blurred image. 
             detected_circles = cv2.HoughCircles(gray_blurred,  
                             cv2.HOUGH_GRADIENT, 1, 20, param1 = 80, 
-                        param2 = 90, minRadius = 1, maxRadius = 200) 
+                        param2 = 50, minRadius = 1, maxRadius = 200) 
             
             detectTime = time.time()
             # Draw circles that are detected. 
@@ -63,31 +63,32 @@ while True:
                     cv2.circle(img, (a, b), 1, (0, 0, 255), 3) 
                     # print(time.time())
                     if on_track == 1:
-                        if time.time() - moveTime > 0.5:
-                            
-                            if a == int(frameWidth)/2 and b == int(frameHeight)/2:
-                                on_track = 0
-                                print("Finish")
-                                print(a,b,r*2)
-                                print(yaw,pitch)
-                                break
-                            if a < int(frameWidth)/2: # -
-                                yaw+=0.1
-                            elif a > int(frameWidth)/2 :
-                                yaw-=0.1
-                            if b < int(frameHeight)/2:
-                                pitch+=0.1
-                            elif b > int(frameHeight)/2 :
-                                pitch-=0.1
-                            
-                                # time.sleep(2)
-                            if yaw > 180 :
-                                yaw = -180 + 0.1
-                            elif yaw < -180:
-                                yaw = 180 - 0.1
-                            setAngleGimbal(yaw,pitch)
-                            moveTime = time.time()
-                            print("Move")
+                        # if time.time() - moveTime > 0.5:
+                        print("circle : ",a,b,r*2)
+                        print("gimbal : ",yaw,pitch)
+                        if a == int(frameWidth)/2 and b == int(frameHeight)/2:
+                            on_track = 0
+                            print("Finish")
+                            print(a,b,r*2)
+                            print(yaw,pitch)
+                            break
+                        if a < int(frameWidth)/2: # -
+                            yaw+=0.1
+                        elif a > int(frameWidth)/2 :
+                            yaw-=0.1
+                        if b < int(frameHeight)/2:
+                            pitch+=0.1
+                        elif b > int(frameHeight)/2 :
+                            pitch-=0.1
+                        
+                            # time.sleep(2)
+                        if yaw > 180 :
+                            yaw = -180 + 0.1
+                        elif yaw < -180:
+                            yaw = 180 - 0.1
+                        setAngleGimbal(yaw,pitch)
+                        moveTime = time.time()
+                        print("Move")
                     
             cv2.circle(img, (int(frameWidth)//2,int(frameHeight)//2), 4, (255, 0, 0), 2)        
             cv2.imshow("Detected Circle", img) 
