@@ -1,6 +1,6 @@
 import cv2 
 import numpy as np 
-from controlGimbal import setAngleGimbal, Zoom
+from controlGimbal import setAngleGimbal, Zoom,Take_picture
 from calLatLong002 import cal_objectGPS1
 import time
   
@@ -8,7 +8,7 @@ import time
 import os
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;5000" # 5 seconds 
 
-yaw = -90
+yaw = 0
 pitch = 0
 time.sleep(2)
 setAngleGimbal(yaw,pitch)
@@ -110,6 +110,9 @@ while True:
         elif inp == ord("a"):
             yaw+=1
             setAngleGimbal(yaw,pitch)
+        elif inp == ord("p"):
+            print("Take_Picture")
+            Take_picture()
         elif 48 <= inp <= 57:
             track_id = inp - 48
             on_track = 1

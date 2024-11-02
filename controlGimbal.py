@@ -158,6 +158,92 @@ def Zoom(x):
 
     # close socket
     sockfd.close()
+    
+def Take_picture():
+    try:
+        sockfd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    except socket.error as e:
+        print(f"socket error: {e}")
+        sys.exit(1)
+
+    # Set IP addresses and port number of gimbal camera
+    
+    send_addr = (SERVER_IP, SERVER_PORT)
+    #data = '55 66 01 02 00 00 00 0e 00 00'
+
+    #print(yaw,pitch)
+    
+    data = [0x55,0x66,0x01,0x01,0x00,0x00,0x00,0x0c,0x00]
+    # data = [0x55,0x66,0x01,0x00,0x00,0x00,0x00,0x0d]
+    crc=CRC16_cal(data)
+    print(hex(crc))
+    data.append(crc&0x00ff)
+    data.append(crc>>8)
+    print(data)
+    send_buf = bytearray(data)  # Frame protocol of the relevant functions in hexadecimal
+
+    # Send frame data
+    # print("Send HEX data")
+    try:
+        sockfd.sendto(send_buf, send_addr)
+    except socket.error as e:
+        print(f"sendto error: {e}")
+        sys.exit(1)
+
+    # Receive the responding data from gimbal camera
+    recv_buf, addr = sockfd.recvfrom(RECV_BUUF_SIZE)
+
+    # print the received data in hexadecimal
+    # print("Received HEX data: ", end="")
+    # for byte in recv_buf:
+    #     print(f"{byte:02x} ", end="")
+    # print()
+
+    # close socket
+    sockfd.close()
+    
+def Laser_Rangefinder():
+    try:
+        sockfd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    except socket.error as e:
+        print(f"socket error: {e}")
+        sys.exit(1)
+
+    # Set IP addresses and port number of gimbal camera
+    
+    send_addr = (SERVER_IP, SERVER_PORT)
+    #data = '55 66 01 02 00 00 00 0e 00 00'
+
+    #print(yaw,pitch)
+    
+    data = [0x55,0x66,0x01,0x00,0x00,0x00,0x00,0x0c]
+    # data = [0x55,0x66,0x01,0x00,0x00,0x00,0x00,0x0d]
+    crc=CRC16_cal(data)
+    print(hex(crc))
+    data.append(crc&0x00ff)
+    data.append(crc>>8)
+    print(data)
+    send_buf = bytearray(data)  # Frame protocol of the relevant functions in hexadecimal
+
+    # Send frame data
+    # print("Send HEX data")
+    try:
+        sockfd.sendto(send_buf, send_addr)
+    except socket.error as e:
+        print(f"sendto error: {e}")
+        sys.exit(1)
+
+    # Receive the responding data from gimbal camera
+    recv_buf, addr = sockfd.recvfrom(RECV_BUUF_SIZE)
+
+    # print the received data in hexadecimal
+    print("Received HEX data: ", end="")
+    for byte in recv_buf:
+        print(f"{byte:02x} ", end="")
+    print()
+
+    # close socket
+    sockfd.close()
 # initialize the camera object so that we 
 # can get frame from it 
 # cap = cv2.VideoCapture("rtsp://192.168.144.25:8554/video1") 
